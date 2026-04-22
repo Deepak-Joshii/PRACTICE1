@@ -187,6 +187,25 @@ app.post("/expense", authMiddleware, async (req, res) => {
     }
 });
 
+//delete expense
+app.delete("/expense/:id", authMiddleware, async (req, res) => {
+    try {
+        const expense = await Expense.findOneAndDelete({
+            _id: req.params.id,
+            userId: req.user.id
+        });
+
+        if (!expense) {
+            return res.status(404).json({ msg: "Expense not found" });
+        }
+
+        res.json({ msg: "Deleted successfully" });
+
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // GET ALL EXPENSES (Protected)
 app.get("/expenses", authMiddleware, async (req, res) => {
     try {
