@@ -26,55 +26,39 @@ function Login() {
     try {
       const res = await axios.post(`${API}/login`, form);
 
-      // ✅ Save token
       localStorage.setItem("token", res.data.token);
 
       alert("Login successful ✅");
-
-      // ✅ Redirect
       navigate("/dashboard");
 
     } catch (err) {
-      console.log(err);
       alert("Invalid credentials ❌");
+      console.log(err);
     }
   };
 
   return (
-    <div className="home-wrapper">
-      <div className="home-box">
+    <form onSubmit={handleSubmit} className="form-box">
 
-        <h2>Welcome Back</h2>
+      <input
+        type="email"
+        name="email"
+        placeholder="Email"
+        value={form.email}
+        onChange={handleChange}
+      />
 
-        <div className="toggle-buttons">
-          <button className="active">Login</button>
-          <button onClick={() => navigate("/")}>Register</button>
-        </div>
+      <input
+        type="password"
+        name="password"
+        placeholder="Password"
+        value={form.password}
+        onChange={handleChange}
+      />
 
-        <form onSubmit={handleSubmit} className="form-box">
+      <button type="submit">Login</button>
 
-          <input
-            type="email"
-            name="email"
-            placeholder="Enter Email"
-            value={form.email}
-            onChange={handleChange}
-          />
-
-          <input
-            type="password"
-            name="password"
-            placeholder="Enter Password"
-            value={form.password}
-            onChange={handleChange}
-          />
-
-          <button type="submit">Login</button>
-
-        </form>
-
-      </div>
-    </div>
+    </form>
   );
 }
 
