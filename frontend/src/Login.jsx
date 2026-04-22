@@ -1,8 +1,15 @@
 import { useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 function Login() {
-  const [form, setForm] = useState({ email: "", password: "" });
+  const API = import.meta.env.VITE_API_URI;
+  const navigate = useNavigate();
+
+  const [form, setForm] = useState({
+    email: "",
+    password: ""
+  });
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -11,26 +18,55 @@ function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    try {
-      const res = await axios.post("https://practice1a.onrender.com/login", form);
+    if (!form.email || !form.password) {
+      alert("All fields required");
+      return;
+    }
 
+    try {
+      const res = await axios.post(`${API}/login`, form);
+
+      // ✅ SAVE TOKEN
       localStorage.setItem("token", res.data.token);
-      window.location.href = "/dashboard";
+
+      alert("Login successful ✅");
+
+      // ✅ REDIRECT
+      navigate("/dashboard");
 
     } catch (err) {
-      alert(err.response?.data?.msg || "Error");
+      console.log(err);
+      alert("Invalid credentials ❌");
     }
   };
 
   return (
-    <div className="container">
-      <h2>Login</h2>
+    <div className="auth-wrapper">
+      <div className="auth-box">
 
-      <form onSubmit={handleSubmit}>
-        <input name="email" placeholder="Email" onChange={handleChange} />
-        <input name="password" type="password" placeholder="Password" onChange={handleChange} />
-        <button type="submit">Login</button>
-      </form>
+        <h2>Login</h2>
+
+        <form onSubmit={handleSubmit} className="form-box">
+
+          <input
+            name="email"
+            placeholder="Email"
+            value={form.email}
+            onChange={handleChange}
+          />
+
+          <input
+            name="password"
+            type="password"
+            placeholder="Password"
+            value={form.password}
+            onChange={handleChange}
+          />
+
+          <button type="submit">Login</button>
+
+        </form>
+      </div>
     </div>
   );
 }
