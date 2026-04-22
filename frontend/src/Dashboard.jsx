@@ -12,7 +12,7 @@ function Dashboard() {
 
   const token = localStorage.getItem("token");
 
-  // 🔄 FETCH EXPENSES
+  // FETCH EXPENSES
   const fetchExpenses = async () => {
     try {
       setLoading(true);
@@ -23,22 +23,25 @@ function Dashboard() {
 
       setExpenses(res.data);
     } catch (err) {
-      console.log(err);
+      console.log("FETCH ERROR:", err.response?.data || err.message);
+      alert("Error fetching expenses");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchExpenses();
-  }, []);
+    if (token) {
+      fetchExpenses();
+    }
+  }, [token]);
 
-  // ✍️ HANDLE INPUT
+  // HANDLE INPUT
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  // ➕ ADD EXPENSE (OPTIMIZED)
+  // ADD EXPENSE
   const addExpense = async (e) => {
     e.preventDefault();
 
@@ -47,46 +50,50 @@ function Dashboard() {
       return;
     }
 
-    // 🧠 TEMP EXPENSE (for instant UI)
-    const tempExpense = {
-      ...form,
-      _id: "temp-" + Date.now()
-    };
+    // DUPLICATE CHECK
+    const duplicate = expenses.find(
+      (exp) =>
+        exp.title === form.title &&
+        exp.amount === Number(form.amount) &&
+        exp.category === form.category
+    );
 
-    setExpenses((prev) => [tempExpense, ...prev]);
+    if (duplicate) {
+      alert("Duplicate expense detected!");
+      return;
+    }
 
     try {
       await axios.post("https://practice1a.onrender.com/expense", form, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      // 🔄 Sync with backend (removes temp + prevents duplicates)
-      fetchExpenses();
+      alert("Expense added successfully ✅");
+
+      fetchExpenses(); // refresh list
 
     } catch (err) {
-      console.log(err);
-      // ❌ rollback if error
-      setExpenses((prev) => prev.filter((exp) => exp._id !== tempExpense._id));
+      console.log("ADD ERROR:", err.response?.data || err.message);
+      alert("Error: " + (err.response?.data?.msg || err.message));
     }
 
     setForm({ title: "", amount: "", category: "" });
   };
 
-  // 🗑️ DELETE EXPENSE
+  // DELETE EXPENSE
   const deleteExpense = async (id) => {
-    const oldExpenses = expenses;
-
-    // ⚡ instant remove
-    setExpenses((prev) => prev.filter((exp) => exp._id !== id));
-
     try {
       await axios.delete(`https://practice1a.onrender.com/expense/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
+
+      alert("Expense deleted 🗑️");
+
+      fetchExpenses();
+
     } catch (err) {
-      console.log(err);
-      // rollback if failed
-      setExpenses(oldExpenses);
+      console.log("DELETE ERROR:", err.response?.data || err.message);
+      alert("Delete failed ❌");
     }
   };
 
@@ -98,11 +105,12 @@ function Dashboard() {
 
         <div className="dashboard-sections">
 
-          {/* LEFT: ADD */}
+          {/* LEFT: ADD FORM */}
           <div className="left-section">
             <h3>Add Expense</h3>
 
             <form onSubmit={addExpense} className="form-box vertical">
+
               <input
                 name="title"
                 placeholder="Title"
@@ -118,14 +126,21 @@ function Dashboard() {
                 onChange={handleChange}
               />
 
-              <input
+              {/* ✅ DROPDOWN FIX */}
+              <select
                 name="category"
-                placeholder="Category"
                 value={form.category}
                 onChange={handleChange}
-              />
+              >
+                <option value="">Select Category</option>
+                <option value="Food">Food</option>
+                <option value="Travel">Travel</option>
+                <option value="Bills">Bills</option>
+                <option value="Other">Other</option>
+              </select>
 
               <button type="submit">Add Expense</button>
+
             </form>
           </div>
 
@@ -148,7 +163,6 @@ function Dashboard() {
                     <button
                       className="delete-btn"
                       onClick={() => deleteExpense(exp._id)}
-                      disabled={exp._id.startsWith("temp")}
                     >
                       Delete
                     </button>
@@ -156,6 +170,7 @@ function Dashboard() {
                 ))}
               </div>
             )}
+
           </div>
 
         </div>
