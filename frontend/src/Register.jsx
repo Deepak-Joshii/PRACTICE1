@@ -1,8 +1,16 @@
 import { useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 function Register() {
-  const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const API = import.meta.env.VITE_API_URI;
+  const navigate = useNavigate();
+
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    password: ""
+  });
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -11,24 +19,66 @@ function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (!form.name || !form.email || !form.password) {
+      alert("All fields required");
+      return;
+    }
+
     try {
-      await axios.post("https://practice1a.onrender.com/register", form);
-      alert("Registered Successfully");
+      await axios.post(`${API}/register`, form);
+
+      alert("Registered successfully ✅");
+
+      // redirect to login
+      navigate("/login");
+
     } catch (err) {
-      alert(err.response?.data?.msg || "Error");
+      console.log(err);
+      alert("Registration failed ❌");
     }
   };
 
   return (
-    <div className="container">
-      <h2>Register</h2>
+    <div className="home-wrapper">
+      <div className="home-box">
 
-      <form onSubmit={handleSubmit}>
-        <input name="name" placeholder="Name" onChange={handleChange} />
-        <input name="email" placeholder="Email" onChange={handleChange} />
-        <input name="password" type="password" placeholder="Password" onChange={handleChange} />
-        <button type="submit">Register</button>
-      </form>
+        <h2>Create Account</h2>
+
+        <div className="toggle-buttons">
+          <button onClick={() => navigate("/login")}>Login</button>
+          <button className="active">Register</button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="form-box">
+
+          <input
+            name="name"
+            placeholder="Enter Name"
+            value={form.name}
+            onChange={handleChange}
+          />
+
+          <input
+            type="email"
+            name="email"
+            placeholder="Enter Email"
+            value={form.email}
+            onChange={handleChange}
+          />
+
+          <input
+            type="password"
+            name="password"
+            placeholder="Enter Password"
+            value={form.password}
+            onChange={handleChange}
+          />
+
+          <button type="submit">Register</button>
+
+        </form>
+
+      </div>
     </div>
   );
 }

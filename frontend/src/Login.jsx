@@ -26,12 +26,12 @@ function Login() {
     try {
       const res = await axios.post(`${API}/login`, form);
 
-      // ✅ SAVE TOKEN
+      // ✅ Save token
       localStorage.setItem("token", res.data.token);
 
       alert("Login successful ✅");
 
-      // ✅ REDIRECT
+      // ✅ Redirect
       navigate("/dashboard");
 
     } catch (err) {
@@ -41,24 +41,30 @@ function Login() {
   };
 
   return (
-    <div className="auth-wrapper">
-      <div className="auth-box">
+    <div className="home-wrapper">
+      <div className="home-box">
 
-        <h2>Login</h2>
+        <h2>Welcome Back</h2>
+
+        <div className="toggle-buttons">
+          <button className="active">Login</button>
+          <button onClick={() => navigate("/")}>Register</button>
+        </div>
 
         <form onSubmit={handleSubmit} className="form-box">
 
           <input
+            type="email"
             name="email"
-            placeholder="Email"
+            placeholder="Enter Email"
             value={form.email}
             onChange={handleChange}
           />
 
           <input
-            name="password"
             type="password"
-            placeholder="Password"
+            name="password"
+            placeholder="Enter Password"
             value={form.password}
             onChange={handleChange}
           />
@@ -66,6 +72,7 @@ function Login() {
           <button type="submit">Login</button>
 
         </form>
+
       </div>
     </div>
   );
