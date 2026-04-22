@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 
 function Dashboard() {
+  const API = import.meta.env.VITE_API_URI;
+
   const [expenses, setExpenses] = useState([]);
   const [form, setForm] = useState({
     title: "",
@@ -12,18 +14,17 @@ function Dashboard() {
 
   const token = localStorage.getItem("token");
 
-  // FETCH EXPENSES
   const fetchExpenses = async () => {
     try {
       setLoading(true);
 
-      const res = await axios.get("https://practice1a.onrender.com/expenses", {
+      const res = await axios.get(`${API}/expenses`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
       setExpenses(res.data);
     } catch (err) {
-      console.log("FETCH ERROR:", err.response?.data || err.message);
+      console.log(err);
       alert("Error fetching expenses");
     } finally {
       setLoading(false);
@@ -36,12 +37,10 @@ function Dashboard() {
     }
   }, [token]);
 
-  // HANDLE INPUT
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  // ADD EXPENSE
   const addExpense = async (e) => {
     e.preventDefault();
 
@@ -50,50 +49,34 @@ function Dashboard() {
       return;
     }
 
-    // DUPLICATE CHECK
-    const duplicate = expenses.find(
-      (exp) =>
-        exp.title === form.title &&
-        exp.amount === Number(form.amount) &&
-        exp.category === form.category
-    );
-
-    if (duplicate) {
-      alert("Duplicate expense detected!");
-      return;
-    }
-
     try {
-      await axios.post("https://practice1a.onrender.com/expense", form, {
+      await axios.post(`${API}/expense`, form, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      alert("Expense added successfully ✅");
-
-      fetchExpenses(); // refresh list
+      alert("Expense added ✅");
+      fetchExpenses();
 
     } catch (err) {
-      console.log("ADD ERROR:", err.response?.data || err.message);
-      alert("Error: " + (err.response?.data?.msg || err.message));
+      console.log(err);
+      alert("Error adding expense");
     }
 
     setForm({ title: "", amount: "", category: "" });
   };
 
-  // DELETE EXPENSE
   const deleteExpense = async (id) => {
     try {
-      await axios.delete(`https://practice1a.onrender.com/expense/${id}`, {
+      await axios.delete(`${API}/expense/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      alert("Expense deleted 🗑️");
-
+      alert("Deleted 🗑️");
       fetchExpenses();
 
     } catch (err) {
-      console.log("DELETE ERROR:", err.response?.data || err.message);
-      alert("Delete failed ❌");
+      console.log(err);
+      alert("Delete failed");
     }
   };
 
@@ -105,7 +88,6 @@ function Dashboard() {
 
         <div className="dashboard-sections">
 
-          {/* LEFT: ADD FORM */}
           <div className="left-section">
             <h3>Add Expense</h3>
 
@@ -126,7 +108,6 @@ function Dashboard() {
                 onChange={handleChange}
               />
 
-              {/* ✅ DROPDOWN FIX */}
               <select
                 name="category"
                 value={form.category}
@@ -144,7 +125,6 @@ function Dashboard() {
             </form>
           </div>
 
-          {/* RIGHT: VIEW */}
           <div className="right-section">
             <h3>Your Expenses</h3>
 
